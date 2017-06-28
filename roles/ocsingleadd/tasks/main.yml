@@ -1,15 +1,7 @@
 ---
-- name: Check for project before running play
-  command: oc get projects | grep {{ projectname }}
-  register: command
-  ignore_errors: true
-
-- name: The project exists, can not create new project with the {{ projectname }}
-  fail: msg="Not able to create project due to project already exists"
-  when: when: "'Error' in command.stderr"
 
 - name: create oc {{ projectname }}
-  command: oadm new-project {{ projectname }} --node-selector= "site={{ label }}"
+  command: oadm new-project {{ projectname }} 
 
 - name: create admin rights for {{ username }}
   command: oc policy add-role-to-user admin {{ username }} -n {{ projectname }}
