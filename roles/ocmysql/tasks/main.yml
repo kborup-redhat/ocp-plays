@@ -1,0 +1,18 @@
+---
+- name: Check for project before running play
+  command: oc get projects | grep {{ projectname }}
+  register: command
+  ignore_errors: true
+
+- name: The project exists, can not create new project with the {{ projectname }}
+  fail: msg="Not able to create project due to project already exists"
+  when: when: "'Error' in command.stderr"
+
+- name: create oc {{ projectname }}
+  command: oadm new-project {{ projectname }} --node-selector= "site={{ label }}"
+
+- name: create admin rights for {{ username }}
+  command: oc policy add-role-to-user admin {{ username }} -n {{ projectname }}
+
+- name: Setup mysql for {{ projectname }}
+  command: oc new-app --template=mysql-persistent -p MYSQL_USER={{ dbuser }} -p MYSQL_PASSWORD={{ dbpass }} -p POSGRESQL_DATABASE={{ dbname }} -p MYSQL_VERSION={{ dbver }} -p DATABASE_SERVICE_NAME={{ dbuser }}-{{ dbname }} -p MEMORY_LIMIT={{ memlimit }}Gi -p VOLUME_CAPACITY={{ dbsize }}Gi

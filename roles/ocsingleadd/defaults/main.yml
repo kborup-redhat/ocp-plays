@@ -1,0 +1,5 @@
+---
+# defaults file for octools
+projectname: testproject
+username: youruser
+pass: yourpass

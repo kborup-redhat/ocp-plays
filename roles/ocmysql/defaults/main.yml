@@ -1,0 +1,10 @@
+---
+# defaults file for octools
+projectname: testproject
+username: youruser
+dbuser: youruser
+dbpass: dbpassword
+dbname: dbname
+dbversion: latest
+memlimit: 1
+dbsize: 5

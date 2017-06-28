@@ -1,0 +1,5 @@
+---
+
+- name: delete  {{ projectname }}
+  command: oc delete project {{ projectname }}
+
