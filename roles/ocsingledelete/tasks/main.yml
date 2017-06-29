@@ -24,6 +24,6 @@
 - debug:
     msg: var={{ service_output }}
 - debug:
-    msg: var={{ service_output.options.dialog.dialog_param_projectname }}
+    msg: var={{ service_output.content.options.dialog.dialog_param_projectname }}
 - name: delete  {{ projectname }}
   command: oc delete project {{ projectname }}
