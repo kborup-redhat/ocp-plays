@@ -3,18 +3,12 @@
 - debug: var=manageiq.api_token
 - debug: var=manageiq.service
 
-- name: Set the Provider URL
-  set_fact:
-    provider_url: "{{ manageiq.api_url }}/api/providers/{{ provider_id }}"
-
 - name: Set the Service URL
   set_fact:
     svc_url: "/api/{{ manageiq.service }}"
 
 
 - debug: var=svc_url
-
-- set_fact: find_vm_url="{{ manageiq.api_url }}/api/vms?expand=resources&attributes=href,uid_ems&filter[]=uid_ems='{{ new_vm_uuid }}'"
 
 - name: Query CloudForms for Service vars
   uri:
