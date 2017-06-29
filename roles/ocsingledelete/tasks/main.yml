@@ -21,9 +21,10 @@
     body_format: json
     return_content: yes
   register: service_output
-- debug:
-    msg: var={{ service_output | from_json }}
-- debug:
-    msg: var={{ service_output.content.options.dialog.dialog_param_projectname | from_json }}
-- name: delete  {{ projectname }}
-  command: oc delete project {{ projectname }}
+  
+- name: Set the projectname
+  set_fact:
+    project_name: "{{ service_output.json.options.dialog.dialog_param_projectname }}"
+
+- name: delete  {{ project_name }}
+  command: oc delete project {{ project_name }}
