@@ -1,15 +1,13 @@
 ---
-- debug: var=manageiq.api_url
-- debug: var=manageiq.api_token
-- debug: var=manageiq.service
+
+# This play fetch the param_projectname from Cloudforms service object when you retire a service and present it as a project_name
+# To be used for deletion
+# Auth: smossber@redhat.com
 
 - name: Set the Service URL
   set_fact:
     svc_url: "/api/{{ manageiq.service }}"
-
-
-- debug: var=svc_url
-
+    
 - name: Query CloudForms for Service vars
   uri:
     url: "{{ manageiq.api_url }}/{{ svc_url }}"
@@ -21,9 +19,10 @@
     body_format: json
     return_content: yes
   register: service_output
-- debug:
-    msg: var={{ service_output | from_json }}
-- debug:
-    msg: var={{ service_output.content.options.dialog.dialog_param_projectname | from_json }}
-- name: delete  {{ projectname }}
-  command: oc delete project {{ projectname }}
+  
+- name: Set the projectname
+  set_fact:
+    project_name: "{{ service_output.json.options.dialog.dialog_param_projectname }}"
+
+- name: delete  {{ project_name }}
+  command: oc delete project {{ project_name }}
