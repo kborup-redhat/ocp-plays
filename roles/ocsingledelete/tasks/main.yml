@@ -1,5 +1,29 @@
 ---
+- debug: var=manageiq.api_url
+- debug: var=manageiq.api_token
+- debug: var=manageiq.service
 
+- name: Set the Service URL
+  set_fact:
+    svc_url: "/api/{{ manageiq.service }}"
+
+
+- debug: var=svc_url
+
+- name: Query CloudForms for Service vars
+  uri:
+    url: "{{ manageiq.api_url }}/{{ svc_url }}"
+    method: GET
+    validate_certs: no
+    headers:
+       X-Auth-Token: "{{ manageiq.api_token }}"
+       Content-Type: "application/json"
+    body_format: json
+    return_content: yes
+  register: service_output
+- debug:
+    msg: var={{ service_output | from_json }}
+- debug:
+    msg: var={{ service_output.content.options.dialog.dialog_param_projectname | from_json }}
 - name: delete  {{ projectname }}
   command: oc delete project {{ projectname }}
-

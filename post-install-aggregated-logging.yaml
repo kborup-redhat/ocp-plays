@@ -1,0 +1,69 @@
+---
+# This playbook will Fix Aggregated logging after running the Openshift config playbook as it brakes.
+# It will pick out the the Elastic Search Deployment configurations and
+# - Scale them down
+# - Make sure they run as privileged pods
+# - Make sure the pods get scheduled on different infra nodes
+# - Make sure that they use a local storage path for persistent storage
+# . Rollout the dcs and scale up again
+
+- hosts: master1
+  gather_facts: false
+
+  vars:
+    # Should be the project name where logging is deployed
+    logging_namespace: logging
+    # The node selector for where to put the pods, the infra nodes will have this label/key
+    node_selector: logging-es-node
+    # the key value of the node selector. Each infra node will have a different value
+    node_selector_numerator:
+      - "1"
+      - "2"
+      - "3"
+
+  tasks:
+    - name: Get DCs
+      command: oc get deploymentconfig --selector logging-infra=elasticsearch -o name
+      register: deployment_configs
+
+    - name: Set fact dcs
+      set_fact: dcs="{{ deployment_configs.stdout_lines }}"
+
+    - name: print dc separatly
+      debug: var=dcs
+
+    - name: do something with each line in dcs
+      command: oc describe "{{ item }}"
+      with_items: "{{ dcs }}"
+
+    - name: Scale down all elasticsearch dcs
+      command: >
+        oc scale {{ item }} --replicas 0 -n {{ logging_namespace }}
+      with_items: "{{ dcs }}"
+
+    - name: Make all elasticsearch pods run as priviliged
+      command: >
+        oc patch {{ item }} -p '{"spec":{"template":{"spec":{"containers":[{"name":"elasticsearch","securityContext":{"privileged": true}}]}}}}' -n {{ logging_namespace }}
+      with_items: "{{ dcs }}"
+
+    - name: Patch elasticsearch pods to only run on nodes with tag
+      command: >
+        oc patch {{ item[0] }}  -p '{"spec":{"template":{"spec":{"nodeSelector":{"{{ node_selector }}":"{{ item[1] }}"}}}}}' -n {{ logging_namespace }}
+      with_together:
+        - "{{ dcs }}"
+        - "{{ node_selector_numerator }}"
+
+    - name: Configure storage on the logging Deployment Configs
+      command: >
+        oc set volume {{ item }} --add --overwrite --name=elasticsearch-storage --type=hostPath --path=/usr/local/es-storage -n {{ logging_namespace }}
+      with_items: "{{ dcs }}"
+
+    - name: Do a rollout of all Deployment Configs
+      command: >
+        oc rollout latest {{ item }} -n {{ logging_namespace }}
+      with_items: "{{ dcs }}"
+
+    - name: Scale all Deployment Configs to 1
+      command: >
+        oc scale {{ item }} --replicas=1 -n {{ logging_namespace }}
+      with_items: "{{ dcs }}"
