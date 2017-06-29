@@ -1,15 +1,8 @@
 ---
-- debug: var=manageiq.api_url
-- debug: var=manageiq.api_token
-- debug: var=manageiq.service
-
 - name: Set the Service URL
   set_fact:
     svc_url: "/api/{{ manageiq.service }}"
-
-
-- debug: var=svc_url
-
+    
 - name: Query CloudForms for Service vars
   uri:
     url: "{{ manageiq.api_url }}/{{ svc_url }}"
