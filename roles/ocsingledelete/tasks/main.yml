@@ -1,4 +1,9 @@
 ---
+
+# This play fetch the param_projectname from Cloudforms service object when you retire a service and present it as a project_name
+# To be used for deletion
+# Auth: smossber@redhat.com
+
 - name: Set the Service URL
   set_fact:
     svc_url: "/api/{{ manageiq.service }}"
