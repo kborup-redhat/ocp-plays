@@ -1,7 +1,4 @@
 ---
 
 - name: create oc {{ projectname }}
-  command: oadm new-project {{ projectname }} 
-
-- name: create admin rights for {{ username }}
-  command: oc policy add-role-to-user admin {{ username }} -n {{ projectname }}
+  shell: oc process project-request-quotas-no-limits -n default -p PROJECT_NAME={{ projectname }} -p PROJECT_ADMIN_USER={{ username }} -p PROJECT_REQUESTING_USER=CreatedByCloudforms -p PROJECT_MAX_PODS={{ pods }} -p PROJECT_STORAGE_MAX_PVC={{ pvcmax }} -p PROJECT_STORAGE_MAX_SIZE={{ storagemax }} | oc create -f -
